@@ -107,6 +107,43 @@ export const downloadCSV = (csvContent: string, filename: string): void => {
   document.body.removeChild(link);
 };
 
+// Generate more transactions for testing pagination
+export const generateMockTransactions = (count: number): Transaction[] => {
+  const merchants = [
+    "Amazon", "Walmart", "Target", "Best Buy", "Apple Store", 
+    "Netflix", "Spotify", "Uber", "Lyft", "DoorDash", 
+    "Grubhub", "McDonald's", "Starbucks", "7-Eleven", "CVS Pharmacy",
+    "Walgreens", "Home Depot", "Lowe's", "IKEA", "Costco"
+  ];
+  
+  const result: Transaction[] = [];
+  
+  for (let i = 0; i < count; i++) {
+    const probFraud = Math.random();
+    const isForeign = Math.random() > 0.8 ? 1 : 0;
+    const isDifferentCountry = isForeign === 1 && Math.random() > 0.5 ? 1 : 0;
+    
+    result.push({
+      txn_count_24h: Math.floor(Math.random() * 10),
+      amount_to_avg_ratio: Math.random() * 5 + 0.1,
+      amount_24h: Math.random() * 5000,
+      distance_from_prev_txn: Math.random() * 15000,
+      different_country: isDifferentCountry,
+      is_foreign_transaction: isForeign,
+      amount_to_limit_ratio: Math.random() * 0.9,
+      amount_to_available_ratio: Math.random() * 0.9,
+      account_age_days: Math.floor(Math.random() * 1500),
+      days_since_address_change: Math.floor(Math.random() * 500),
+      Prob_Fraud: probFraud,
+      accountNumber: 100000000 + Math.floor(Math.random() * 900000000),
+      customerId: 100000000 + Math.floor(Math.random() * 900000000),
+      merchantName: `${merchants[Math.floor(Math.random() * merchants.length)]} #${Math.floor(Math.random() * 1000000)}`
+    });
+  }
+  
+  return result;
+};
+
 // Simulate loading JSON files
 export const simulateJSONFileLoading = (
   onDataLoaded: (data: Transaction) => void, 
