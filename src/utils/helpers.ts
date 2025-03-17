@@ -147,7 +147,7 @@ export const generateMockTransactions = (count: number): Transaction[] => {
 // Simulate loading JSON files
 export const simulateJSONFileLoading = (
   onDataLoaded: (data: Transaction) => void, 
-  interval: number = 500
+  interval: number = 2000
 ): { start: () => void; stop: () => void } => {
   let intervalId: number | null = null;
   

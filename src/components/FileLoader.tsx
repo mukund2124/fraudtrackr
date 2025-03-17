@@ -20,11 +20,11 @@ const FileLoader: React.FC<FileLoaderProps> = ({ onDataLoaded }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   useEffect(() => {
-    // Initialize the simulator with 0.5 second interval instead of 2 seconds
+    // Initialize the simulator
     const sim = simulateJSONFileLoading((data) => {
       onDataLoaded(data);
       setFileCount(prev => prev + 1);
-    }, 500); // Changed from 2000 to 500 milliseconds
+    });
     
     setSimulator(sim);
     
@@ -127,7 +127,7 @@ const FileLoader: React.FC<FileLoaderProps> = ({ onDataLoaded }) => {
           description: `Processed ${fileCount} JSON files successfully`
         });
       }
-    }, 500); // Changed from 2000 to 500 milliseconds
+    }, 2000);
     
     // Store intervalId for cleanup
     return () => clearInterval(intervalId);
@@ -142,6 +142,10 @@ const FileLoader: React.FC<FileLoaderProps> = ({ onDataLoaded }) => {
     >
       <div className="flex justify-between items-center">
         <div>
+          <h2 className="text-xl font-semibold flex items-center">
+            <FileJson className="h-5 w-5 mr-2 text-unionbank-blue" />
+            JSON File Loader
+          </h2>
           <p className="text-sm text-gray-500 mt-1">
             {fileCount} files processed
           </p>
@@ -216,14 +220,14 @@ const FileLoader: React.FC<FileLoaderProps> = ({ onDataLoaded }) => {
       {isLoading && (
         <div className="mt-4 bg-black/5 rounded-lg p-3 flex items-center">
           <Loader2 className="h-5 w-5 text-unionbank-blue animate-spin mr-2" />
-          <span className="text-sm">Loading demo transactions... (0.5 second interval)</span>
+          <span className="text-sm">Loading demo transactions... (2 second interval)</span>
         </div>
       )}
       
       {processingState === 'processing' && (
         <div className="mt-4 bg-black/5 rounded-lg p-3 flex items-center">
           <Loader2 className="h-5 w-5 text-unionbank-blue animate-spin mr-2" />
-          <span className="text-sm">Processing uploaded files... (0.5 second interval)</span>
+          <span className="text-sm">Processing uploaded files... ({fileCount}/{uploadedFiles.length} files, 2 second interval)</span>
         </div>
       )}
       
