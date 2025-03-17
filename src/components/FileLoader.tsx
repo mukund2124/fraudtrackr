@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { FolderUp, Loader2, PlayCircle, StopCircle, Upload } from 'lucide-react';
+import { FileJson, Loader2, PlayCircle, StopCircle, FolderUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Transaction } from '../types/Transaction';
 import { simulateJSONFileLoading } from '../utils/helpers';
@@ -16,6 +16,7 @@ const FileLoader: React.FC<FileLoaderProps> = ({ onDataLoaded }) => {
   const [fileCount, setFileCount] = useState(0);
   const [simulator, setSimulator] = useState<{ start: () => void; stop: () => void } | null>(null);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [processingState, setProcessingState] = useState('idle');
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   useEffect(() => {
@@ -78,15 +79,24 @@ const FileLoader: React.FC<FileLoaderProps> = ({ onDataLoaded }) => {
       title: "Files ready",
       description: `${jsonFiles.length} JSON files ready to process`
     });
-    
-    // Auto-start processing files
-    processUploadedFiles();
   };
 
   const processUploadedFiles = () => {
-    if (uploadedFiles.length === 0) return;
+    if (uploadedFiles.length === 0) {
+      toast({
+        title: "No files to process",
+        description: "Please upload JSON files first",
+        variant: "destructive"
+      });
+      return;
+    }
     
-    setIsLoading(true);
+    if (processingState === 'processing') {
+      setProcessingState('idle');
+      return;
+    }
+    
+    setProcessingState('processing');
     setFileCount(0);
     
     let index = 0;
@@ -111,7 +121,7 @@ const FileLoader: React.FC<FileLoaderProps> = ({ onDataLoaded }) => {
         index++;
       } else {
         clearInterval(intervalId);
-        setIsLoading(false);
+        setProcessingState('idle');
         toast({
           title: "Processing complete",
           description: `Processed ${fileCount} JSON files successfully`
@@ -133,8 +143,8 @@ const FileLoader: React.FC<FileLoaderProps> = ({ onDataLoaded }) => {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-xl font-semibold flex items-center">
-            <Upload className="h-5 w-5 mr-2 text-unionbank-blue" />
-            Transaction Loader
+            <FileJson className="h-5 w-5 mr-2 text-unionbank-blue" />
+            JSON File Loader
           </h2>
           <p className="text-sm text-gray-500 mt-1">
             {fileCount} files processed
@@ -147,6 +157,8 @@ const FileLoader: React.FC<FileLoaderProps> = ({ onDataLoaded }) => {
             ref={fileInputRef} 
             onChange={handleFileInputChange} 
             style={{ display: 'none' }} 
+            webkitdirectory="" 
+            directory=""
             multiple
           />
           
@@ -156,8 +168,28 @@ const FileLoader: React.FC<FileLoaderProps> = ({ onDataLoaded }) => {
             className="bg-white text-unionbank-blue border-unionbank-blue hover:bg-unionbank-blue hover:text-white"
           >
             <FolderUp className="h-5 w-5 mr-2" />
-            Upload Files
+            Upload Folder
           </Button>
+          
+          {uploadedFiles.length > 0 && (
+            <Button
+              variant={processingState === 'processing' ? 'destructive' : 'default'}
+              onClick={processUploadedFiles}
+              className={processingState === 'processing' ? 'bg-unionbank-red' : 'bg-unionbank-blue'}
+            >
+              {processingState === 'processing' ? (
+                <>
+                  <StopCircle className="h-5 w-5 mr-2" />
+                  Stop Processing
+                </>
+              ) : (
+                <>
+                  <PlayCircle className="h-5 w-5 mr-2" />
+                  Process Files
+                </>
+              )}
+            </Button>
+          )}
           
           <motion.button
             className={`px-4 py-2 rounded-lg flex items-center space-x-2 ${
@@ -188,7 +220,21 @@ const FileLoader: React.FC<FileLoaderProps> = ({ onDataLoaded }) => {
       {isLoading && (
         <div className="mt-4 bg-black/5 rounded-lg p-3 flex items-center">
           <Loader2 className="h-5 w-5 text-unionbank-blue animate-spin mr-2" />
-          <span className="text-sm">Processing transactions...</span>
+          <span className="text-sm">Loading demo transactions... (2 second interval)</span>
+        </div>
+      )}
+      
+      {processingState === 'processing' && (
+        <div className="mt-4 bg-black/5 rounded-lg p-3 flex items-center">
+          <Loader2 className="h-5 w-5 text-unionbank-blue animate-spin mr-2" />
+          <span className="text-sm">Processing uploaded files... ({fileCount}/{uploadedFiles.length} files, 2 second interval)</span>
+        </div>
+      )}
+      
+      {uploadedFiles.length > 0 && processingState === 'idle' && (
+        <div className="mt-4 bg-black/5 rounded-lg p-3">
+          <p className="text-sm font-medium mb-1">{uploadedFiles.length} JSON files ready to process</p>
+          <p className="text-xs text-gray-500">Click "Process Files" to start processing them one by one</p>
         </div>
       )}
     </motion.div>
