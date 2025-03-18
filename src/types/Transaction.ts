@@ -23,4 +23,5 @@ export interface TransactionFilters {
   isForeignOnly: boolean;
   isDifferentCountryOnly: boolean;
   merchantName: string;
+  riskCategories?: ('red' | 'yellow' | 'green')[];
 }

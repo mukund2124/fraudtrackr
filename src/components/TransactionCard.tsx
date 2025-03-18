@@ -4,19 +4,27 @@ import { motion } from 'framer-motion';
 import { ChevronDown, AlertTriangle, CheckCircle, AlertCircle } from 'lucide-react';
 import { Transaction } from '../types/Transaction';
 import { getRiskLevel, formatPercentage } from '../utils/helpers';
+import { Button } from './ui/button';
 
 interface TransactionCardProps {
   transaction: Transaction;
   isExpanded: boolean;
   onToggle: () => void;
+  onMarkFraud?: (transactionId: number) => void;
+  onMarkNonFraud?: (transactionId: number) => void;
 }
 
 const TransactionCard: React.FC<TransactionCardProps> = ({ 
   transaction, 
   isExpanded, 
-  onToggle 
+  onToggle,
+  onMarkFraud,
+  onMarkNonFraud
 }) => {
   const riskLevel = getRiskLevel(transaction.Prob_Fraud);
+  const [isMarkedFraud, setIsMarkedFraud] = React.useState<boolean | null>(null);
+  
+  const needsReview = transaction.Prob_Fraud >= 0.7 && transaction.Prob_Fraud <= 0.8;
   
   const RiskIcon = () => {
     switch(riskLevel) {
@@ -33,6 +41,16 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
     high: 'from-risk-high/10 to-risk-high/5 border-risk-high/20',
     medium: 'from-risk-medium/10 to-risk-medium/5 border-risk-medium/20',
     low: 'from-risk-low/10 to-risk-low/5 border-risk-low/20'
+  };
+
+  const handleMarkFraud = () => {
+    setIsMarkedFraud(true);
+    if (onMarkFraud) onMarkFraud(transaction.accountNumber);
+  };
+
+  const handleMarkNonFraud = () => {
+    setIsMarkedFraud(false);
+    if (onMarkNonFraud) onMarkNonFraud(transaction.accountNumber);
   };
   
   return (
@@ -54,6 +72,12 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
               <h3 className="font-medium">{transaction.merchantName}</h3>
               <p className="text-sm text-gray-500">Customer ID: {transaction.customerId}</p>
             </div>
+            
+            {riskLevel === 'high' && (
+              <div className="ml-2 px-2 py-1 bg-risk-high/10 text-risk-high text-xs font-medium rounded-full border border-risk-high/20">
+                Blocked Transaction
+              </div>
+            )}
           </div>
           
           <div className="flex items-center space-x-4">
@@ -123,6 +147,28 @@ const TransactionCard: React.FC<TransactionCardProps> = ({
               <p className="font-medium">{formatPercentage(transaction.amount_to_available_ratio)}</p>
             </div>
           </div>
+          
+          {needsReview && (
+            <div className="mt-4 flex items-center space-x-3 justify-end">
+              <p className="text-sm text-gray-500 mr-2">Mark as:</p>
+              <Button 
+                variant={isMarkedFraud ? "destructive" : "outline"}
+                size="sm"
+                onClick={handleMarkFraud}
+                className={isMarkedFraud ? "bg-[#ea384c]" : ""}
+              >
+                Fraud
+              </Button>
+              <Button 
+                variant={isMarkedFraud === false ? "outline" : "outline"}
+                size="sm"
+                onClick={handleMarkNonFraud}
+                className={isMarkedFraud === false ? "bg-[#F2FCE2] border-green-500" : ""}
+              >
+                Non-Fraud
+              </Button>
+            </div>
+          )}
         </motion.div>
       )}
     </motion.div>

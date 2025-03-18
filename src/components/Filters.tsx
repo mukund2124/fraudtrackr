@@ -1,8 +1,10 @@
 
 import React, { useState } from 'react';
-import { Search, Filter, X } from 'lucide-react';
+import { Search, Filter, X, AlertTriangle, AlertCircle, CheckCircle } from 'lucide-react';
 import { TransactionFilters } from '../types/Transaction';
 import { motion } from 'framer-motion';
+import { Checkbox } from './ui/checkbox';
+import { Label } from './ui/label';
 
 interface FiltersProps {
   onFilterChange: (filters: TransactionFilters) => void;
@@ -14,7 +16,8 @@ const defaultFilters: TransactionFilters = {
   maxFraudProb: 1,
   isForeignOnly: false,
   isDifferentCountryOnly: false,
-  merchantName: ''
+  merchantName: '',
+  riskCategories: []
 };
 
 const Filters: React.FC<FiltersProps> = ({ onFilterChange }) => {
@@ -23,11 +26,23 @@ const Filters: React.FC<FiltersProps> = ({ onFilterChange }) => {
 
   const handleFilterChange = (
     field: keyof TransactionFilters,
-    value: string | number | boolean
+    value: string | number | boolean | ('red' | 'yellow' | 'green')[]
   ) => {
     const updatedFilters = { ...filters, [field]: value };
     setFilters(updatedFilters);
     onFilterChange(updatedFilters);
+  };
+
+  const handleRiskCategoryChange = (category: 'red' | 'yellow' | 'green', checked: boolean) => {
+    let updatedCategories = [...(filters.riskCategories || [])];
+    
+    if (checked) {
+      updatedCategories.push(category);
+    } else {
+      updatedCategories = updatedCategories.filter(c => c !== category);
+    }
+    
+    handleFilterChange('riskCategories', updatedCategories);
   };
 
   const resetFilters = () => {
@@ -156,6 +171,55 @@ const Filters: React.FC<FiltersProps> = ({ onFilterChange }) => {
               value={filters.merchantName}
               onChange={(e) => handleFilterChange('merchantName', e.target.value)}
             />
+          </div>
+          
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Risk Categories
+            </label>
+            <div className="flex flex-wrap gap-4">
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="redTransactions" 
+                  checked={filters.riskCategories?.includes('red')}
+                  onCheckedChange={(checked) => 
+                    handleRiskCategoryChange('red', checked === true)
+                  }
+                />
+                <div className="flex items-center">
+                  <AlertTriangle className="h-4 w-4 text-[#ea384c] mr-1" />
+                  <Label htmlFor="redTransactions" className="text-sm">Red Transactions</Label>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="yellowTransactions" 
+                  checked={filters.riskCategories?.includes('yellow')}
+                  onCheckedChange={(checked) => 
+                    handleRiskCategoryChange('yellow', checked === true)
+                  }
+                />
+                <div className="flex items-center">
+                  <AlertCircle className="h-4 w-4 text-amber-500 mr-1" />
+                  <Label htmlFor="yellowTransactions" className="text-sm">Yellow Transactions</Label>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="greenTransactions" 
+                  checked={filters.riskCategories?.includes('green')}
+                  onCheckedChange={(checked) => 
+                    handleRiskCategoryChange('green', checked === true)
+                  }
+                />
+                <div className="flex items-center">
+                  <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
+                  <Label htmlFor="greenTransactions" className="text-sm">Green Transactions</Label>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="col-span-full flex justify-end">

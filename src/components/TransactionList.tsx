@@ -18,6 +18,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [sortedTransactions, setSortedTransactions] = useState<Transaction[]>([]);
   const [page, setPage] = useState(1);
+  const [markedFraud, setMarkedFraud] = useState<{[key: number]: boolean}>({});
   const itemsPerPage = 10;
 
   useEffect(() => {
@@ -27,6 +28,14 @@ const TransactionList: React.FC<TransactionListProps> = ({
 
   const toggleExpand = (id: number) => {
     setExpandedId(expandedId === id ? null : id);
+  };
+
+  const handleMarkFraud = (transactionId: number) => {
+    setMarkedFraud(prev => ({...prev, [transactionId]: true}));
+  };
+
+  const handleMarkNonFraud = (transactionId: number) => {
+    setMarkedFraud(prev => ({...prev, [transactionId]: false}));
   };
 
   const totalPages = Math.ceil(sortedTransactions.length / itemsPerPage);
@@ -68,6 +77,8 @@ const TransactionList: React.FC<TransactionListProps> = ({
                 transaction={transaction}
                 isExpanded={expandedId === index}
                 onToggle={() => toggleExpand(index)}
+                onMarkFraud={handleMarkFraud}
+                onMarkNonFraud={handleMarkNonFraud}
               />
             ))}
             

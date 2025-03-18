@@ -17,6 +17,13 @@ export const getRiskLevel = (probFraud: number): 'high' | 'medium' | 'low' => {
   return 'low';
 };
 
+// Get risk category for filtering
+export const getRiskCategory = (probFraud: number): 'red' | 'yellow' | 'green' => {
+  if (probFraud > 0.8) return 'red';
+  if (probFraud >= 0.5) return 'yellow';
+  return 'green';
+};
+
 // Get risk color based on fraud probability
 export const getRiskColor = (probFraud: number): string => {
   if (probFraud > 0.8) return 'risk-high';
@@ -71,6 +78,14 @@ export const filterTransactions = (
         .includes(filters.merchantName.toLowerCase())
     ) {
       return false;
+    }
+
+    // Risk category filter
+    if (filters.riskCategories && filters.riskCategories.length > 0) {
+      const category = getRiskCategory(transaction.Prob_Fraud);
+      if (!filters.riskCategories.includes(category)) {
+        return false;
+      }
     }
 
     return true;
